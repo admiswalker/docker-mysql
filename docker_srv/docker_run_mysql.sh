@@ -7,7 +7,7 @@ docker run --rm --name docker-mysql-5-7 -d \
   -e MYSQL_DATABASE=test \
   -e MYSQL_USER=testuser \
   -e MYSQL_PASSWORD=testpass \
-  -p 3306:3306 \
+  -p 127.0.0.1:3306:3306 \
   -u `id -u`:`id -g` \
   mysql:5.7.37
 
