@@ -4,8 +4,7 @@
 ### コンテナの取り扱い
 - 起動
   ```
-  cd docker_srv
-  ./docker_run_mysql.sh
+  ./docker_srv/docker_run_mysql.sh
   ```
   ※ ログ情報など，起動中のメッセージを取得したい場合は，shell の -d オプションを外すこと．
 - 起動中コンテナの確認
@@ -59,9 +58,10 @@ MySQL Workbench をインストールして，
 ```
 ./docker_client/docker_run_mysql_client.sh
 ```
-
-
-
+※ host ネットワークを共有するか，
+`docker create network` で作成したネットワークを共有するか，
+docker compose でネットワークを疎通する必要がある．
+ここでは host ネットワークを共有している．
 
 ## 付録
 ### docker image
