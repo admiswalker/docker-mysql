@@ -69,10 +69,63 @@
   use <db_name>;
   drop table <table_name>;
   ```
+### レコードの操作
+#### 追加
+- 単数行レコードの追加
+  ```sql
+  use <db_name>;
+  insert <table_name>(<col_name1>,<col_name2>,<col_name3>)values(<col_value1>,<col_value2>,<col_value3>);
+  ```
+  ```sql
+  insert [into] <db_name>.<table_name>(<col_name1>,<col_name2>,<col_name3>)values(<col_value1>,<col_value2>,<col_value3>);
+  ```
+  ※ `into` の有無は動作に影響しない．
+- 複数行レコードの追加
+  ```sql
+  use <db_name>;
+  insert <table_name> values(<col_value1>,<col_value2>,<col_value3>),(<col_value1>,<col_value2>,<col_value3>);
+  ```
+  ```sql
+  insert [into] <db_name>.<table_name> values(<col_value1>,<col_value2>,<col_value3>),(<col_value1>,<col_value2>,<col_value3>);
+  ```
+  ※ `into` の有無は動作に影響しない．
+- auto_increment を利用した挿入  
+  - 手法１．column の指定で id を飛ばして指定し，残りの要素を挿入する
+  - 手法２．id に 0 を指定して，auto_increment を適用可能な値であると DB に指示する
 
-
-```
-```
+  設定: 
+  ```sql
+  create database my_system;
+  -- show databases;
+  use my_system;
+  -- select database();
+  create table users(id int not null auto_increment primary key, name varchar(255));
+  -- show tables;
+  insert users(name)values('example_user01'),('example_user02'); -- skip the id to use the auto_increment
+  insert users values(0,'example_user03'),(0,'example_user04'); -- 0 is treated as an 'auto_increment'-able value
+  ```
+  確認: 
+  ```sql
+  use my_system;
+  select * from users;
+  ```
+  削除: 
+  ```sql
+  use my_system;
+  drop table users;
+  -- show tables;
+  drop database my_system;
+  -- show databases;
+  ```
+#### 確認
+- 既存レコードの確認
+  ```sql
+  use <db_name>;
+  select * from <table_name>;
+  ```
+  ```sql
+  select * from <db_name>.<table_name>;
+  ```
 
 ## 付録
 ### データ型とオプション
@@ -94,7 +147,7 @@
   | 型       | 最大長            | 説明        |
   | -------- | ----------------- | ----------- |
   | char(m)  | 255               | 固定長文字列型．サイズ m の固定長領域を DB に直接確保する．サイズは常に m を示す．未使用領域はスペースで埋められる． |
-  | varchar(m) | 65535 (≒64kB)  | 可変長文字列型．サイズ m の領域の内，実際に入力された文字数分の領域を DB に直接保存する．領域が不足する場合は，DB 保存先の領域が再構築される．最大サイズを m で指定する． |
+  | varchar(m) | 65535 (≒64kB)  | 可変長文字列型．サイズ m の領域の内，実際に入力された文字数分の領域を DB に直接保存する．領域が不足する場合は，DB 保存先の領域が再構築される．最大サイズを m で指定する．var は variable の var |
   | tinytext   |           255          | 可変長文字列型．データへのポインタを保持する．ストレージエンジンにより，先頭の 255 byte をテーブルに格納することがある． |
   | text[(m)]  |        65,535 (≒64kB) | 可変長文字列型．データへのポインタを保持する．ストレージエンジンにより，先頭の 255 byte をテーブルに格納することがある． |
   | mediumtext |    16,777,215 (≒16MB) | 可変長文字列型．データへのポインタを保持する．ストレージエンジンにより，先頭の 255 byte をテーブルに格納することがある． |
@@ -103,7 +156,7 @@
   | 型       | 最大長            | 説明        |
   | -------- | ----------------- | ----------- |
   | binary(m)    | 255            | 固定長バイナリ型．サイズ m の固定長領域を DB に直接確保する．サイズは常に m を示す．使用領域に関わらず m Bytes のストレージを消費する． |
-  | varbinary(m) | 65535 (≒64kB) | 可変長バイナリ型．サイズ m の領域の内，実際に入力されたバイト数分の領域を DB に直接保存する．領域が不足する場合は，DB 保存先の領域が再構築される．最大サイズを m で指定する． |
+  | varbinary(m) | 65535 (≒64kB) | 可変長バイナリ型．サイズ m の領域の内，実際に入力されたバイト数分の領域を DB に直接保存する．領域が不足する場合は，DB 保存先の領域が再構築される．最大サイズを m で指定する．var は variable の var |
   | tinyblob   |           255          | 可変長バイナリ型．データへのポインタを保持する．ストレージエンジンにより，先頭の 255 byte をテーブルに格納することがある． |
   | blob[(m)]  |        65,535 (≒64kB) | 可変長バイナリ型．データへのポインタを保持する．ストレージエンジンにより，先頭の 255 byte をテーブルに格納することがある． |
   | mediumblob |    16,777,215 (≒16MB) | 可変長バイナリ型．データへのポインタを保持する．ストレージエンジンにより，先頭の 255 byte をテーブルに格納することがある． |
