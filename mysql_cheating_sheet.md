@@ -97,19 +97,26 @@
       | blob[(m)]  |        65,535 (≒64kB) | 可変長バイナリ型．データへのポインタを保持する．ストレージエンジンにより，先頭の 255 byte をテーブルに格納することがある． |
       | mediumblob |    16,777,215 (≒16MB) | 可変長バイナリ型．データへのポインタを保持する．ストレージエンジンにより，先頭の 255 byte をテーブルに格納することがある． |
       | longblob   | 4,294,967,295 (≒4GB)  | 可変長バイナリ型．データへのポインタを保持する．ストレージエンジンにより，先頭の 255 byte をテーブルに格納することがある． |
-
-      ※ blob 型は binary データを扱うデータ型．データのサイズは指定しない．  
-    ref: [11.1.3 文字列型の概要 - mysql](https://dev.mysql.com/doc/refman/5.6/ja/string-type-overview.html)  
-    ref: [11.7 データ型のストレージ要件 - mysql](https://dev.mysql.com/doc/refman/5.6/ja/storage-requirements.html)
-  ```
-  verchar(string_length)
-  ```
-  - options
-    ```
-    not null
-    auto_increment
-    primary key
-    ```
+    - Date 型
+      | 型       | 最大長            | 説明        |
+      | -------- | ----------------- | ----------- |
+      | date      |                   |             |
+      | datetime  |                   |             |
+      | timestamp |                   |             |
+      | time      |                   |             |
+      | year[4]   |                   |             |
+      | year[2]   |                   |             |
+  - オプション
+    | オプション | 説明 |
+    | ---------- | ---- |
+    | primary key    | primary key の設定された cloumn は，自動的に index が作成されるため，データを高速に検索できる．また，column は重複した値を取れなくり，ユニークな値に制約される |
+    | unsigned       | 正の数に制約する |
+    | zerofill       | 数値型の未使用桁をゼロ埋めする．数値 column に対して zerofill を指定すると，自動的に unsigned 属性が付与される |
+    | not null       | column に必ず値を設定することを制約する |
+    | auto_increment | データを追加した column に格納されている最大値に 1 を加算した値を自動的に設定する |
+  ref: [11.1.1 数値型の概要](https://dev.mysql.com/doc/refman/5.6/ja/numeric-type-overview.html)  
+  ref: [11.1.3 文字列型の概要 - mysql](https://dev.mysql.com/doc/refman/5.6/ja/string-type-overview.html)  
+  ref: [11.7 データ型のストレージ要件 - mysql](https://dev.mysql.com/doc/refman/5.6/ja/storage-requirements.html)
 - 既存 table の削除
   ```sql
   use <db_name>;
