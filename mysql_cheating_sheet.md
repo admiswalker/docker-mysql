@@ -69,6 +69,12 @@
   use <db_name>;
   drop table <table_name>;
   ```
+### 更新
+- column の追加
+  ```
+  alter table xxxxxxxxxxxxxxxxxxx;
+  ```
+
 ### レコードの操作
 #### 追加
 - 単数行レコードの追加
@@ -89,34 +95,6 @@
   insert [into] <db_name>.<table_name> values(<col_value1>,<col_value2>,<col_value3>),(<col_value1>,<col_value2>,<col_value3>);
   ```
   ※ `into` の有無は動作に影響しない．
-- auto_increment を利用した挿入  
-  - 手法１．column の指定で id を飛ばして指定し，残りの要素を挿入する
-  - 手法２．id に 0 を指定して，auto_increment を適用可能な値であると DB に指示する
-
-  設定: 
-  ```sql
-  create database my_system;
-  -- show databases;
-  use my_system;
-  -- select database();
-  create table users(id int not null auto_increment primary key, name varchar(255));
-  -- show tables;
-  insert users(name)values('example_user01'),('example_user02'); -- skip the id to use the auto_increment
-  insert users values(0,'example_user03'),(0,'example_user04'); -- 0 is treated as an 'auto_increment'-able value
-  ```
-  確認: 
-  ```sql
-  use my_system;
-  select * from users;
-  ```
-  削除: 
-  ```sql
-  use my_system;
-  drop table users;
-  -- show tables;
-  drop database my_system;
-  -- show databases;
-  ```
 #### 確認
 - 既存レコードの確認
   ```sql
@@ -128,6 +106,40 @@
   ```
 
 ## 付録
+### auto_increment を利用した挿入  
+- 手法１．column の指定で id を飛ばして指定し，残りの要素を挿入する
+- 手法２．id に 0 を指定して，auto_increment を適用可能な値であると DB に指示する
+
+前準備: 
+```sql
+create database my_system;
+-- show databases;
+use my_system;
+-- select database();
+create table users(id int not null auto_increment primary key, name varchar(255));
+-- show tables;
+```
+手法１: 
+```sql
+insert users(name)values('example_user01'),('example_user02'); -- skip the id to use the auto_increment
+```
+手法２: 
+```sql
+insert users values(0,'example_user03'),(0,'example_user04'); -- 0 is treated as an 'auto_increment'-able value
+```
+確認: 
+```sql
+use my_system;
+select * from users;
+```
+削除: 
+```sql
+use my_system;
+drop table users;
+-- show tables;
+drop database my_system;
+-- show databases;
+```
 ### データ型とオプション
 - 整数型
   | 型       | サイズ            | 説明        |
