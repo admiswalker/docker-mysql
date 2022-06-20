@@ -1,5 +1,10 @@
 # MySQL cheating sheet
 
+## 記号の説明
+| 記号 | 説明 |
+| ---- | ---- |
+| []   | 括られた区間がオプションであることを示す |
+
 ## DB の操作
 ### 状態遷移と状態の確認
 - 既存の DB 一覧の確認
@@ -69,13 +74,22 @@
   use <db_name>;
   drop table <table_name>;
   ```
-### 更新
-- column の追加
-  ```
-  alter table xxxxxxxxxxxxxxxxxxx;
+### Column の操作
+- 追加
+  ```sql
+  alter table <table_name> add <column_name> <col_type>;
   ```
 
 ### レコードの操作
+#### 確認
+- 既存レコードの確認
+  ```sql
+  use <db_name>;
+  select * from <table_name>;
+  ```
+  ```sql
+  select * from <db_name>.<table_name>;
+  ```
 #### 追加
 - 単数行レコードの追加
   ```sql
@@ -95,15 +109,27 @@
   insert [into] <db_name>.<table_name> values(<col_value1>,<col_value2>,<col_value3>),(<col_value1>,<col_value2>,<col_value3>);
   ```
   ※ `into` の有無は動作に影響しない．
-#### 確認
-- 既存レコードの確認
-  ```sql
-  use <db_name>;
-  select * from <table_name>;
+#### 更新
+- 個々の table 要素に
   ```
-  ```sql
-  select * from <db_name>.<table_name>;
+  update <table_name> set <col_name>=<value> where <conditions>;
   ```
+  - `<col_name>=<value>` (値の指定)
+    - set する値を指定する
+    - 複数の column を同時に更新する場合はカンマ `,` で繋げる
+  - `<conditions>` (条件)
+    - `<col_name>=<col_value>` のように指定して，指定した column の内，値の一致する column を更新する
+    - 複数の条件を指定する場合は `and` で繋げる
+    - その他，使用できる[演算子の一覧](https://dev.mysql.com/doc/refman/5.6/ja/non-typed-operators.html)
+- 全ての column に同じ値を入れる
+  ```
+  update <table_name> set <col_name> = <value> [where true];
+  ```
+  ※ MySQL を `$ mysql -u <user_name> -p --safe-update` のように起動すると，where の指定が必須となる．不用意なデータの破壊を防ぐため，本番システムでは指定するとよい．逆に全ての column に同じ値を挿入したいのに where が求められる場合は DB に `where true` と指示する．
+#### 削除
+- 条件に一致したレコードの削除
+- 全てのテーブルのレコードの削除
+
 
 ## 付録
 ### auto_increment を利用した挿入  
