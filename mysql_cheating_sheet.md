@@ -28,20 +28,20 @@
   ```sql
   DROP DATABASE <db_name>;
   ```
-## Table の操作
+# テーブルの操作
 ### 状態遷移と状態の確認
-- 既存の table 一覧の確認
+- 既存のテーブル一覧の確認
   ```sql
   show tables;
   ```
-- 既存 table の構造確認
+- 既存テーブルの構造確認
   ```sql
   SHOW COLUMNS FROM <table_name>;
   ```
   ```sql
   DESCRIBE <table_name>;
   ```
-- table 構造の確認
+- テーブル構造の確認
   ```sql
   use <db_name>;
   desc <table_name>;
@@ -59,7 +59,7 @@
   show fields from <table_name>;
   ```
 ### 作成と削除
-- 新規 table の作成
+- 新規テーブルの作成
   ```sql
   use <db_name>;
 
@@ -69,12 +69,12 @@
     ...
     );
   ```
-- 既存 table の削除
+- 既存テーブルの削除
   ```sql
   use <db_name>;
   drop table <table_name>;
   ```
-### Column の操作
+### カラムの操作
 - 追加
   ```sql
   use <db_name>;
@@ -131,22 +131,22 @@
   ```
   ※ `into` の有無は動作に影響しない．
 #### 更新
-- 個々の table 要素に
+- 個々のテーブル要素に
   ```
   update <table_name> set <col_name>=<value> where <conditions>;
   ```
   - `<col_name>=<value>` (値の指定)
     - set する値を指定する
-    - 複数の column を同時に更新する場合はカンマ `,` で繋げる
+    - 複数のカラムを同時に更新する場合はカンマ `,` で繋げる
   - `<conditions>` (条件)
-    - `<col_name>=<col_value>` のように指定して，指定した column の内，値の一致する column を更新する
+    - `<col_name>=<col_value>` のように指定して，指定したカラムの内，値の一致するカラムを更新する
     - 複数の条件を指定する場合は `and` で繋げる
     - その他，使用できる[演算子の一覧](https://dev.mysql.com/doc/refman/5.6/ja/non-typed-operators.html)
-- 全ての column に同じ値を入れる
+- 全てのカラムに同じ値を入れる
   ```
   update <table_name> set <col_name> = <value> [where true];
   ```
-  ※ MySQL を `$ mysql -u <user_name> -p --safe-update` のように起動すると，where の指定が必須となる．不用意なデータの破壊を防ぐため，本番システムでは指定するとよい．逆に全ての column に同じ値を挿入したいのに where が求められる場合は DB に `where true` と指示する．
+  ※ MySQL を `$ mysql -u <user_name> -p --safe-update` のように起動すると，where の指定が必須となる．不用意なデータの破壊を防ぐため，本番システムでは指定するとよい．逆に全てのカラムに同じ値を挿入したいのに where が求められる場合は DB に `where true` と指示する．
 #### 削除
 - テーブルのレコードを全て削除する
   ```sql
@@ -169,6 +169,22 @@
     ```
 
 ## 付録
+### 用語
+
+**略称**
+| 略称 | 説明 |
+| ---- | ---- |
+| PK   | PRIMARY KEY |
+| NN   | NOT NULL |
+| UQ   | UNIQUE INDEX |
+| BIN  | BINARY |
+| UN   | UNSIGNED |
+| ZF   | ZEROFILL |
+| AI   | AUTO_INCREMENT |
+| G    | Generated Column |
+
+参考: [8.1.10.2 Columns Tab](https://dev.mysql.com/doc/workbench/en/wb-table-editor-columns-tab.html)
+
 ### 削除の種類
 
 | <nobr>削除命令</nobr> | <nobr>説明</nobr> |
@@ -253,15 +269,21 @@ drop database my_system;
   | time      |                   |             |
   | year[4]   |                   |             |
   | year[2]   |                   |             |
-- オプション
+- キーのオプション
+  | <nobr>オプション</nobr> | 説明 |
+  | ---------- | ---- |
+  | <nobr>primary key</nobr> | DB がテーブルのレコードを一意に特定するためにカラムに指定する key．primary key の設定されたカラムは，自動的に index が作成されるため，データを高速に検索できる．基本は 1 つのカラムを primary key に指定するが，複数のカラムの組み合わせを primary key に指定することもできる<br>**制約**<br><ul><li>重複した値が取れず，ユニークな値に制約される</ul></li><ul><li>必須項目となるため not null オプションが自動で付与されて null を設定できなくなる</ul></li> |
+  | foreign key<br>(外部キー) | テーブル間で関連するカラムを接続する key．関連するデータを接合し，整合性を担保する．外部キーは親テーブルで primary key に設定されていることが多い<br>**制約**<ul><li>子テーブルには親テーブルにあるカラムしか外部キーに登録できない</li></ul>**削除の設定**<ul><li>**on delete cascade:**<br>親テーブルの行を削除すると，参照元の子テーブルの対応する行も削除する設定</ul></li><ul><li>**on delete restrict:**<br>親テーブルの削除拒否する設定．（参照を外さない限り，削除しようとするとエラーで止まる）</ul></li><ul><li>**on delete set null:**<br>親テーブルを削除すると，参照元の子テーブルの対応する行に null をセットする設定</ul></li>**アップデートの設定**<ul><li>**on update cascade:**<br>親テーブルの行を変更すると，参照元の子テーブルの対応する行も変更する設定</ul></li><ul><li>**on update restrict:**<br>親テーブルの変更を拒否する設定．（参照を外さない限り，変更しようとするとエラーで止まる）</ul></li><ul><li>**on update set null:**<br>親テーブルの行を変更すると，参照元の子テーブルの対応する行に null をセットする設定</ul></li><br>参考: [13.1.17.2 外部キー制約の使用](https://dev.mysql.com/doc/refman/5.6/ja/create-table-foreign-keys.html) |
+  | unique key | テーブルのカラムが重複した値を取れないように設定する key．<br>**制約**<br><ul><li>table のレコードの内容を一意に制約する</li></ul> |
+- その他のオプション
   | オプション | 説明 |
   | ---------- | ---- |
-  | primary key    | primary key の設定された column は，自動的に index が作成されるため，データを高速に検索できる．また，column は重複した値を取れなくり，ユニークな値に制約される |
   | unsigned       | 正の数に制約する |
-  | zerofill       | 数値型の未使用桁をゼロ埋めする．数値 column に対して zerofill を指定すると，自動的に unsigned 属性が付与される |
-  | not null       | column に必ず値を設定することを制約する |
-  | auto_increment | データを追加した column に格納されている最大値に 1 を加算した値を自動的に設定する．最大値はデータを削除しても更新されないため，例えば，ユーザ id に auto_increment オプションを付与しておくと，ユーザを削除しても，同じ id が使用されることはなくなる．なお，truncate 命令を使用すると，auto_increment の採番は初期化される． |
-
+  | zerofill       | 数値型の未使用桁をゼロ埋めする．数値カラムに対して zerofill を指定すると，自動的に unsigned 属性が付与される |
+  | not null       | カラムに必ず値を設定することを制約する |
+  | auto_increment | データを追加したカラムに格納されている最大値に 1 を加算した値を自動的に設定する．最大値はデータを削除しても更新されないため，例えば，ユーザ id に auto_increment オプションを付与しておくと，ユーザを削除しても，同じ id が使用されることはなくなる．なお，truncate 命令を使用すると，auto_increment の採番は初期化される． |
+  | default        | 初期値を設定する |
+  
 ## 参考資料
 - [11.1.1 数値型の概要](https://dev.mysql.com/doc/refman/5.6/ja/numeric-type-overview.html)
 - [11.1.3 文字列型の概要 - mysql](https://dev.mysql.com/doc/refman/5.6/ja/string-type-overview.html)
