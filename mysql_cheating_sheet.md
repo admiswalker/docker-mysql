@@ -77,7 +77,24 @@
 ### Column の操作
 - 追加
   ```sql
+  use <db_name>;
   alter table <table_name> add <column_name> <col_type>;
+  ```
+- 削除
+  ```sql
+  use <db_name>;
+  alter table <table_name> drop column <column_name>;
+  ```
+- オプションの追加
+  ```sql
+  use <db_name>;
+  alter table <table_name> modify column <col_name> <col_type> <options>;
+  ```
+- オプションの削除  
+  単に `<options>` を追加しないと `<options>` が削除される
+  ```sql
+  use <db_name>;
+  alter table <table_name> modify column <col_name> <col_type>;
   ```
 
 ### レコードの操作
@@ -89,6 +106,10 @@
   ```
   ```sql
   select * from <db_name>.<table_name>;
+  ```
+- ソートして表示する場合．(`<row_count>` の数まで表示する)
+  ```sql
+  select * from <table_name> order by <col_name> [ASC|DESC] limit <row_count>;
   ```
 #### 追加
 - 単数行レコードの追加
@@ -127,11 +148,35 @@
   ```
   ※ MySQL を `$ mysql -u <user_name> -p --safe-update` のように起動すると，where の指定が必須となる．不用意なデータの破壊を防ぐため，本番システムでは指定するとよい．逆に全ての column に同じ値を挿入したいのに where が求められる場合は DB に `where true` と指示する．
 #### 削除
+- テーブルのレコードを全て削除する
+  ```sql
+  use <db_name>;
+  delete from <table_name>;
+  ```
 - 条件に一致したレコードの削除
-- 全てのテーブルのレコードの削除
-
+  ```sql
+  use <db_name>;
+  delete from <table_name> where <conditions>;
+  ```
+- ソートして，指定した個数だけ削除する場合
+  - 削除対象の確認
+    ```sql
+    select * from <table_name> where <options> order by <col_name> [ASC|DESC] limit <row_count>;
+    ```
+  - 削除対象の実施
+    ```sql
+    delete from <table_name> where <options> order by <col_name> [ASC|DESC] limit <row_count>;
+    ```
 
 ## 付録
+### 削除の種類
+
+| <nobr>削除命令</nobr> | <nobr>説明</nobr> |
+| -------- | ---- |
+| drop     | テーブル内の，データとテーブル設定（カラムやカラムの型の設定）を削除する |
+| truncate | テーブル内のレコードを全て削除する．where 句で削除範囲の指定はできない．auto_increment の採番も初期化する． |
+| delete | テーブル内のレコードを削除する．where 句で削除範囲を指定できる．auto_increment の採番は初期化されない． |
+
 ### auto_increment を利用した挿入  
 - 手法１．column の指定で id を飛ばして指定し，残りの要素を挿入する
 - 手法２．id に 0 を指定して，auto_increment を適用可能な値であると DB に指示する
@@ -211,11 +256,11 @@ drop database my_system;
 - オプション
   | オプション | 説明 |
   | ---------- | ---- |
-  | primary key    | primary key の設定された cloumn は，自動的に index が作成されるため，データを高速に検索できる．また，column は重複した値を取れなくり，ユニークな値に制約される |
+  | primary key    | primary key の設定された column は，自動的に index が作成されるため，データを高速に検索できる．また，column は重複した値を取れなくり，ユニークな値に制約される |
   | unsigned       | 正の数に制約する |
   | zerofill       | 数値型の未使用桁をゼロ埋めする．数値 column に対して zerofill を指定すると，自動的に unsigned 属性が付与される |
   | not null       | column に必ず値を設定することを制約する |
-  | auto_increment | データを追加した column に格納されている最大値に 1 を加算した値を自動的に設定する |
+  | auto_increment | データを追加した column に格納されている最大値に 1 を加算した値を自動的に設定する．最大値はデータを削除しても更新されないため，例えば，ユーザ id に auto_increment オプションを付与しておくと，ユーザを削除しても，同じ id が使用されることはなくなる．なお，truncate 命令を使用すると，auto_increment の採番は初期化される． |
 
 ## 参考資料
 - [11.1.1 数値型の概要](https://dev.mysql.com/doc/refman/5.6/ja/numeric-type-overview.html)
