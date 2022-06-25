@@ -1,10 +1,5 @@
 # MySQL cheating sheet
 
-## 記号の説明
-| 記号 | 説明 |
-| ---- | ---- |
-| []   | 括られた区間がオプションであることを示す |
-
 ## DB の操作
 ### 状態遷移と状態の確認
 - 既存の DB 一覧の確認
@@ -32,14 +27,8 @@
 ### 状態遷移と状態の確認
 - 既存のテーブル一覧の確認
   ```sql
+  use <db_name>;
   show tables;
-  ```
-- 既存テーブルの構造確認
-  ```sql
-  SHOW COLUMNS FROM <table_name>;
-  ```
-  ```sql
-  DESCRIBE <table_name>;
   ```
 - テーブル構造の確認
   ```sql
@@ -58,6 +47,12 @@
   use <db_name>;
   show fields from <table_name>;
   ```
+- テーブルの DDL 確認
+  外部キーの設定は，`desc` では確認できないので，下記で確認する．
+  ```sql
+  use <db_name>;
+  show create table <table_name>;
+  ```
 ### 作成と削除
 - 新規テーブルの作成
   ```sql
@@ -75,15 +70,21 @@
   drop table <table_name>;
   ```
 ### カラムの操作
-- 追加
+- 追加  
+  末尾に追加
   ```sql
   use <db_name>;
-  alter table <table_name> add <column_name> <col_type>;
+  alter table <table_name> add <col_name> <col_type>;
+  ```
+  指定のカラムの後に追加
+  ```sql
+  use <db_name>;
+  alter table <table_name> add <col_name> <col_type> after <col_name>;
   ```
 - 削除
   ```sql
   use <db_name>;
-  alter table <table_name> drop column <column_name>;
+  alter table <table_name> drop column <col_name>;
   ```
 - オプションの追加
   ```sql
@@ -169,8 +170,54 @@
     ```
 
 ## 付録
-### 用語
 
+### オペレーション・サンプル
+- **カラムの追加と外部キーの指定**
+  ```sql
+  ```
+  ```sql
+  ```
+- **auto_increment を利用した挿入**
+  - 手法１．column の指定で id を飛ばして指定し，残りの要素を挿入する
+  - 手法２．id に 0 を指定して，auto_increment を適用可能な値であると DB に指示する
+
+  前準備: 
+  ```sql
+  create database my_system;
+  -- show databases;
+  use my_system;
+  -- select database();
+  create table users(id int not null auto_increment primary key, name varchar(255));
+  -- show tables;
+  ```
+  手法１: 
+  ```sql
+  insert users(name)values('example_user01'),('example_user02'); -- skip the id to use the auto_increment
+  ```
+  手法２: 
+  ```sql
+  insert users values(0,'example_user03'),(0,'example_user04'); -- 0 is treated as an 'auto_increment'-able value
+  ```
+  確認: 
+  ```sql
+  use my_system;
+  select * from users;
+  ```
+  削除: 
+  ```sql
+  use my_system;
+  drop table users;
+  -- show tables;
+  drop database my_system;
+  -- show databases;
+  ```
+
+### 記号の説明
+| 記号 | 説明 |
+| ---- | ---- |
+| []   | 括られた区間がオプションであることを示す |
+
+### 用語
 **略称**
 | 略称 | 説明 |
 | ---- | ---- |
@@ -186,47 +233,12 @@
 参考: [8.1.10.2 Columns Tab](https://dev.mysql.com/doc/workbench/en/wb-table-editor-columns-tab.html)
 
 ### 削除の種類
-
 | <nobr>削除命令</nobr> | <nobr>説明</nobr> |
 | -------- | ---- |
 | drop     | テーブル内の，データとテーブル設定（カラムやカラムの型の設定）を削除する |
 | truncate | テーブル内のレコードを全て削除する．where 句で削除範囲の指定はできない．auto_increment の採番も初期化する． |
 | delete | テーブル内のレコードを削除する．where 句で削除範囲を指定できる．auto_increment の採番は初期化されない． |
 
-### auto_increment を利用した挿入  
-- 手法１．column の指定で id を飛ばして指定し，残りの要素を挿入する
-- 手法２．id に 0 を指定して，auto_increment を適用可能な値であると DB に指示する
-
-前準備: 
-```sql
-create database my_system;
--- show databases;
-use my_system;
--- select database();
-create table users(id int not null auto_increment primary key, name varchar(255));
--- show tables;
-```
-手法１: 
-```sql
-insert users(name)values('example_user01'),('example_user02'); -- skip the id to use the auto_increment
-```
-手法２: 
-```sql
-insert users values(0,'example_user03'),(0,'example_user04'); -- 0 is treated as an 'auto_increment'-able value
-```
-確認: 
-```sql
-use my_system;
-select * from users;
-```
-削除: 
-```sql
-use my_system;
-drop table users;
--- show tables;
-drop database my_system;
--- show databases;
-```
 ### データ型とオプション
 - 整数型
   | 型       | サイズ            | 説明        |
