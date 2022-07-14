@@ -52,7 +52,7 @@
 
 - glasses を持っている user の id を調べて，一致する id の結果を返す
   ```sql
-  select management_id,name,property from user_properties where name in (select name from user_properties where property='phone');
+  select management_id,name,property from user_properties where name in (select name from user_properties where property='glasses');
   ```
   ※ where の条件式では in を使う．in 句では複数値を取れる．なお，`=` は値を 1 つしか取れないので，`Subquery returns more than 1 row` というエラーを返す．
 
