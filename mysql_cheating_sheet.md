@@ -53,6 +53,7 @@
   use <db_name>;
   show create table <table_name>;
   ```
+  ※ `create table <table_name>` するコマンドを show するという意味で DDL が表示される．
 ### 作成と削除
 - 新規テーブルの作成
   ```sql
@@ -97,6 +98,49 @@
   use <db_name>;
   alter table <table_name> modify column <col_name> <col_type>;
   ```
+
+### 外部キーの操作
+- 外部キーの追加  
+  前提条件：参照先と参照元のカラムが存在していること
+  ```sql
+  use <db_name>;
+  alter table <table_name> add foreign key (<col_name>) references <table_name>(<col_name>) [<options>];
+  ```
+  - `<options>`:  
+    {`on delete cascade`, `on delete restrict`, `on delete set null`},   
+    {`on update cascade`, `on update restrict`, `on update set null`}
+- 外部キーの削除
+  ```sql
+  use <db_name>;
+  alter table <table_name> drop foreign key <col_key>;
+  ```
+  ※ 外部キーを使用すると，システムが外部キーに対応するキー名を自動で割り当てる．
+  例えば，`<col_name>` に紐づく `<col_key>` は
+  ```
+  use <db_name>;
+  show create table <table_name>; 
+  ```
+  で確認する．すると，`<table_name>_ibfk_1` のような id が `<col_name>` に紐づていることが確認できる．
+- 削除した外部キーを元に戻す
+  外部キーを削除しても，カラムに割り当てられた key 名称 (`col_key`) までは削除されない．このため，`col_key` を指定して戻すか，一度 `col_key` を削除して戻す必要がある．`col_key` を削除する場合は，他の場合で `col_key` が使用されていないことを明確にする必要がある．
+  - 方法１．`col_key` を指定して外部キーを追加する場合
+    ```sql
+    use <db_name>;
+    alter table <table_name> add constraint <col_key> foreign key(<col_name>) references <table_name>(<col_name>) [<options>];
+    ```
+  - 方法２．既存の `col_key` を削除して，外部キーの割り当てと一緒に作り直す場合．()
+    ```sql
+    use <db_name>;
+    alter table <table_name> drop key <col_key>;
+    alter table <table_name> add foreign key(<col_name>) references <table_name>(<col_name>) [<options>];
+    ```
+- 外部キーの更新  
+  `on delete cascade` や `on update cascade` を後から追加したい場合がある．
+  こうした場合は，一度外部キーを削除してから，再度登録する．
+  ```sql
+  show create <table_name>;
+  ```
+  の実行結果を控えておくとよい．
 
 ### レコードの操作
 #### 確認
@@ -172,11 +216,39 @@
 ## 付録
 
 ### オペレーション・サンプル
-- **カラムの追加と外部キーの指定**
-  ```sql
-  ```
-  ```sql
-  ```
+- **カラムの追加と外部キーの指定** (WIP)
+  1. `my_system` DB の作成
+     ```sql
+     create database order_system;
+     use order_system;
+     ```
+  2. `user` table の作成とデータの挿入
+     ```sql
+     create table users(id int not null auto_increment primary key, name varchar(255));
+     insert users(name)value('user001'),('user002'),('user002');
+     ```
+  3. `orders` (命令) table の作成とデータの挿入
+     ```sql
+     create table orders(id int not null auto_increment primary key, order_name varchar(255));
+     insert orders(order_name)value('sit'),('stand'),('walk'),('run'),('sleep');
+     ```
+     ※ `order` は予約語なので，カラム名には使えない．このため，`order_name` とする．
+  4. `order_list` table の作成とデータの挿入
+     ```sql
+     create table order_list(
+      id int not null auto_increment primary key, 
+      order_id int not null, 
+      to int,
+      from int,
+      foreign key(order_id) references orders(id) on delete restrict,
+      foreign key(to) references users(id) on delete restrict,
+      foreign key(from) references users(id) on delete restrict
+      );
+     insert order_list(order_id, to, from)values(3,1,2),(4,2,1),(4,3,2);
+     ```
+  5. データの取り出し
+     ```sql
+     ```
 - **auto_increment を利用した挿入**
   - 手法１．column の指定で id を飛ばして指定し，残りの要素を挿入する
   - 手法２．id に 0 を指定して，auto_increment を適用可能な値であると DB に指示する
@@ -211,6 +283,9 @@
   drop database my_system;
   -- show databases;
   ```
+
+### 設計上のポイント
+- [外部キーの概要と制約を使うことのメリット・デメリット](https://qiita.com/kamillle/items/5ca2db470f199c1bc3ef)
 
 ### 記号の説明
 | 記号 | 説明 |
