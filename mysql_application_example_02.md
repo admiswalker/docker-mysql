@@ -34,56 +34,111 @@
    (6, 222, '22-09-01 00:00:00', 37.5, '22-09-15 00:00:00');
    ```
 
-### クエリ例1: 最新の日付のデータを取得する
-
-max() -> group by -> inner join
-
-1. max max で取得する
-
-```sql
-select user_id, max(measuring_date), max(registration_date)
-from user_body_temperature
-group by user_id;
-```
-
-2. 元のテーブルに inner join する
-
-```sql
-select * from user_body_temperature as lhs
-inner join(
-    select user_id, max(measuring_date) max_measuring_date, max(registration_date) max_registration_date
-    from user_body_temperature
-    group by user_id
-) rhs
-on lhs.user_id = rhs.user_id and lhs.measuring_date = rhs.max_measuring_date and lhs.registration_date = rhs.max_registration_date;
-```
-
-メモ：カラム名重複の解消の仕方を調べる
-
 ### クエリ例2: 1番新しいデータと2番目に新しいデータを取得する
 
 ※ row_number() は MySQL の version 8 系から使える．
 
-```sql
-select *, row_number() over (partition by user_id order by measuring_date desc) row_num from user_body_temperature;
-```
+#### ベースとなるクエリ
 
-- 1番新しいデータの取得
-```sql
-select * from (
-    select *, row_number() over (partition by user_id order by measuring_date desc) row_num from user_body_temperature
-) with_row_num
-where row_num = 1;
-```
+- クエリ
+  ```sql
+  select *, row_number() over (partition by user_id order by measuring_date desc) row_num from user_body_temperature;
+  ```
+- 実行結果
+  ```console
+  +-----+---------+----------------+------------------+-------------------+---------+
+  | idx | user_id | measuring_date | body_temperature | registration_date | row_num |
+  +-----+---------+----------------+------------------+-------------------+---------+
+  |   3 |     111 | 2022-09-01     |             38.5 | 2022-09-15        |       1 |
+  |   2 |     111 | 2022-08-01     |             36.5 | 2022-09-15        |       2 |
+  |   1 |     111 | 2022-07-01     |             36.5 | 2022-07-15        |       3 |
+  |   6 |     222 | 2022-09-01     |             37.5 | 2022-09-15        |       1 |
+  |   5 |     222 | 2022-08-01     |             36.5 | 2022-08-15        |       2 |
+  |   4 |     222 | 2022-07-01     |             36.5 | 2022-07-15        |       3 |
+  +-----+---------+----------------+------------------+-------------------+---------+
+  ```
 
-- 2番新しいデータの取得
-```sql
-select * from (
-    select *, row_number() over (partition by user_id order by measuring_date desc) row_num from user_body_temperature
-) with_row_num
-where row_num = 2;
-```
+#### 1番新しいデータの取得
 
+- クエリ
+  ```sql
+  select * from (
+      select *, row_number() over (partition by user_id order by measuring_date desc) row_num from user_body_temperature
+  ) with_row_num
+  where row_num = 1;
+  ```
+- 実行結果
+  ```console
+  +-----+---------+----------------+------------------+-------------------+---------+
+  | idx | user_id | measuring_date | body_temperature | registration_date | row_num |
+  +-----+---------+----------------+------------------+-------------------+---------+
+  |   3 |     111 | 2022-09-01     |             38.5 | 2022-09-15        |       1 |
+  |   6 |     222 | 2022-09-01     |             37.5 | 2022-09-15        |       1 |
+  +-----+---------+----------------+------------------+-------------------+---------+
+  ```
+
+#### 2番新しいデータの取得
+
+- クエリ
+  ```sql
+  select * from (
+      select *, row_number() over (partition by user_id order by measuring_date desc) row_num from user_body_temperature
+  ) with_row_num
+  where row_num = 2;
+  ```
+- 実行結果
+  ```console
+  +-----+---------+----------------+------------------+-------------------+---------+
+  | idx | user_id | measuring_date | body_temperature | registration_date | row_num |
+  +-----+---------+----------------+------------------+-------------------+---------+
+  |   2 |     111 | 2022-08-01     |             36.5 | 2022-09-15        |       2 |
+  |   5 |     222 | 2022-08-01     |             36.5 | 2022-08-15        |       2 |
+  +-----+---------+----------------+------------------+-------------------+---------+
+  ```
+
+### クエリ例2: 最新の日付のデータを取得する
+
+max() -> group by -> inner join
+
+1. max max で取得する
+   - クエリ
+     ```sql
+     select user_id, max(measuring_date), max(registration_date)
+     from user_body_temperature
+     group by user_id;
+     ```
+   - 実行結果
+     ```console
+     +---------+---------------------+------------------------+
+     | user_id | max(measuring_date) | max(registration_date) |
+     +---------+---------------------+------------------------+
+     |     111 | 2022-09-01          | 2022-09-15             |
+     |     222 | 2022-09-01          | 2022-09-15             |
+     +---------+---------------------+------------------------+
+     ```
+
+2. 元のテーブルに inner join する
+   - クエリ
+     ```sql
+     select * from user_body_temperature as lhs
+     inner join(
+         select user_id, max(measuring_date) max_measuring_date, max(registration_date) max_registration_date
+         from user_body_temperature
+         group by user_id
+     ) rhs
+     on lhs.user_id = rhs.user_id and lhs.measuring_date = rhs.max_measuring_date and lhs.registration_date = rhs.max_registration_date;
+     ```
+   - 実行結果
+     ```console
+     +-----+---------+----------------+------------------+-------------------+---------+--------------------+-----------------------+
+     | idx | user_id | measuring_date | body_temperature | registration_date | user_id | max_measuring_date | max_registration_date |
+     +-----+---------+----------------+------------------+-------------------+---------+--------------------+-----------------------+
+     |   3 |     111 | 2022-09-01     |             38.5 | 2022-09-15        |     111 | 2022-09-01         | 2022-09-15            |
+     |   6 |     222 | 2022-09-01     |             37.5 | 2022-09-15        |     222 | 2022-09-01         | 2022-09-15            |
+     +-----+---------+----------------+------------------+-------------------+---------+--------------------+-----------------------+
+     ```
+
+     メモ：カラム名重複の解消の仕方を調べる
 
 
 
