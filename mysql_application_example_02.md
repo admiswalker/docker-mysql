@@ -16,6 +16,7 @@
 
 
 ### table の作成
+
 1. `test_user_body_temperature` DB の作成
    ```sql
    create database test_user_body_temperature;
@@ -61,7 +62,7 @@ on lhs.user_id = rhs.user_id and lhs.measuring_date = rhs.max_measuring_date and
 
 ### クエリ例2: 1番新しいデータと2番目に新しいデータを取得する
 
-※ row_number() は MySQL では version 8 系から使える関数．
+※ row_number() は MySQL の version 8 系から使える．
 
 ```sql
 select *, row_number() over (partition by user_id order by measuring_date desc) row_num from user_body_temperature;
